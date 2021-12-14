@@ -88,7 +88,7 @@ export function findSubTree(tree, rootId) {
  * @param {Object} {tree, path: 父节点的path, init: 是否是初始化}
  * @param {Callback}} cb 回调函数，参数为 node
  */
-export function depthFirstEach({ nodeKey = 'id', tree, path = [], lazy = false, level = undefined, props = undefined, init = false, parentId = undefined }, cb) {
+export function depthFirstEach({ nodeKey = 'id', tree, path = [], lazy = false, parentNode = null, level = undefined, props = undefined, init = false, parentId = undefined }, cb) {
   if (!Array.isArray(tree)) {
     console.warn('The tree in the first argument to function depthFirstEach must be an array', typeof tree)
     return
@@ -114,11 +114,12 @@ export function depthFirstEach({ nodeKey = 'id', tree, path = [], lazy = false, 
       */
       node = {
         id: _node[nodeKey],
-        parentId: node.parentId || parentId,
+        parentId: parentId || node.parentId,
         label: _node[props.label],
         data: _node,
         level: level,
-        path: [...path, node.id],
+        // 父级的id, 自己的id
+        path: [...path, _node.id],
         isLeaf: lazy ? !!_node[props.isLeaf] : !hasChildren
       }
       /*
@@ -171,12 +172,11 @@ export function getSubNodeCount(tree, node) {
 }
 
 
-export function listToTree(filterList) {
+export function listToTree(filterList, { lazy = false, node = null } = {}) {
   if (!Array.isArray(filterList)) {
     console.warn('The parameter filterList to function listToTree must be an array')
     return
   }
-  // debugger
   if (!filterList || filterList.length === 0) return []
   const root = {
     // 0: {
@@ -210,11 +210,12 @@ export function listToTree(filterList) {
       }
     }
   }
-
   filterList.forEach(node => {
     node.childrenMap = {}
+    // TODO: 性能消耗
     parentNode(root, node.path)[node.id] = node
   })
+  // TODO: 性能消耗
   setChildren(root)
   return Object.values(root)
 }

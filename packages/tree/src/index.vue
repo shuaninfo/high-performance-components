@@ -196,7 +196,7 @@ export default {
       this.big._data = data
       this.init('init')
     },
-    init(op, { lazy = false, node = null }={}) {
+    init(op, { load = false, node = null, index = null }={}) {
       // op: init, restore, showCheckedOnly
       if (this.big._data.length === 0) return
       if (op === 'init') {
@@ -211,9 +211,9 @@ export default {
           const node = _list[i]
           _listMap[node.id] = node
         }
-      }else if(op === 'lazy'){
+      }else if(op === 'load'){
         // 懒加载
-        this.data2node(this.big._loadData, {lazy})
+        this.data2node(this.big._loadData, {load, node, index})
         const _list = this.big.lazylist
         const _listMap = this.big.listMap
         for(let i=0,len=_list.length;i<len;i++){
@@ -221,19 +221,47 @@ export default {
           _listMap[node.id] = node
         }
       }
-      this.initFilter(op, {lazy, node})
+      this.initFilter(op, {load, node})
       if (op === 'init' || op === 'restore') this.initExpand()
       this.setCheckedKeys(this.big.checkedKeys)
       this.backToTop()
       console.log('初始化结束: ', this.big)
     },
     // 拉平 tree
-    data2node(datas, {lazy=false}={}) {
+    data2node(datas, {load=false, node=null, index=null}={}) {
       // level从1开始
-      const _list = lazy ? this.big.lazylist : this.big.list
-      depthFirstEach({ tree: datas, nodeKey: this.nodeKey, lazy:true, init: true, props: this.props,  level: 1 }, node => {
+      let level = 1
+      let nodeId = null
+      let path = null
+      // 懒加载的数据
+      if(load && node){
+        level = node.level + 1
+        nodeId = node[this.nodeKey]
+        path = node.path //[nodeId]
+      }
+      //  this.big.list // lazy
+      let _list = (load && index!=null)? this.big.lazylist : this.big.list
+      const params = {
+        init: true, 
+        props: this.props,  
+        level, 
+        lazy: this.lazy,
+        load,
+        parentId: nodeId, 
+        tree: datas, 
+        nodeKey: this.nodeKey
+      }
+      if(path){
+        params.path = path
+      }
+      depthFirstEach(params, node => {
         _list.push(node)
       })
+      if(load && index != null){
+        console.log('-----------', _list.length)
+        this.big.list.splice(index+1,0, ..._list)
+        this.big.lazylist = []
+      }
     },
 
     // 初始化处理展开逻辑
@@ -249,9 +277,6 @@ export default {
         this.big.filterList.forEach(node => {
           node.isExpand = Boolean(node.path.length < this.expandLevel)
           node.isHidden = Boolean(node.path.length > this.expandLevel)
-          // if(node.id.indexOf('table_')===0){
-          //   debugger
-          // }
           this.initNode(node)
         })
       } else {
@@ -344,7 +369,7 @@ export default {
      * @param {Node} node 当前展开的node
      * @param {Array<NodeData>} datas 待加载的数据列表
      */
-    loadNode(node){
+    loadNode(node, index){
       if(this.lazy && this.load){
         const loadFn = this.load
         loadFn(node, (datas) => {
@@ -352,24 +377,26 @@ export default {
           // 设置node为展开状态
           node.isExpand = !node.isExpand
           this.big._loadData = datas
-          this.init('lazy', {lazy:true, node})
+          this.init('load', {load:true, node, index})
+          // 完成懒加载
+          node.loaded = true
           this.updateView()
-          console.log('懒加载: ', this.big)
+          console.log('懒加载: ', node)
         })
       }else{
         console.error('懒加载配置错误!')
       }
     },
     // 点击展开与收缩
-    onExpand(node) {
+    onExpand(node, index) {
       /*
         1. 如果是叶子, 则不处理
         2. 如果不是叶子 & 开启了懒加载
         3. 如果不是叶子 & 关闭了懒加载
       */
      if (node.isLeaf === true || node.isLeaf ===  undefined) return
-      if(node.isLeaf === false && this.lazy === true){
-        this.loadNode(node)
+      if(node.isLeaf === false && this.lazy === true && !node.loaded){
+        this.loadNode(node, index)
         // 调用
         return
       }
@@ -487,12 +514,13 @@ export default {
     },
 
     // 筛选节点
-    initFilter(op, {lazy = false, node = null}={}) {
+    initFilter(op, {load = false, node = null}={}) {
       // set this.big.filterList
       this.setFilterList(op)
       this.updateView()
       // 过滤后的tree  同时也将children挂载到了this.filterList的节点
-      this.big.filterTree = listToTree(this.big.filterList)
+      this.big.filterTree = listToTree(this.big.filterList, {load, node})
+      console.log('this.big.filterTree: ', this.big.filterTree)
       // TODO: 根据配置确定是否查询
       // breadthFirstEach({ tree: this.big.filterTree }, node => {
       //   /* false: 不是叶子; true: 叶子; undefined: 未知 */
@@ -508,11 +536,11 @@ export default {
     setFilterList(op) {
       if (op === 'showCheckedOnly') {
         // 不直接 this.big.filterList = this.big.checkedNodes, 因为之前的 filter 将 滤掉的 非叶子节点indeterminate = true 丢失了。场景，1. 输入关键字，2. 点击showCheckedOnly
-        this.big.filterList = this.big.list.filter(i => {
-          const is = isCheckedOrIndeterminate(i, this.big.list)
+        this.big.filterList = this.big.list.filter(item => {
+          const is = isCheckedOrIndeterminate(item, this.big.list)
           if (is) {
-            i.checked = true
-            i.indeterminate = false
+            item.checked = true
+            item.indeterminate = false
           }
           return is
         })

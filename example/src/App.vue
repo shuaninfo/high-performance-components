@@ -5,6 +5,7 @@
     <div class="btn-bar">
       tree<br />
       点击按钮，展示tree<br />
+      <button @click="btnClick('tree-10')">10条</button>
       <button @click="btnClick('tree-500')">500条</button>
       <button @click="btnClick('tree-10000')">1w 条</button>
       <button @click="btnClick('tree-20000')">2w 条</button>
@@ -38,7 +39,6 @@
         </select>
         <span slot-scope="{ slotScope }"><i>&#9733;</i> 
           {{ slotScope.label }}
-          {{ slotScope.isLeaf }}
         </span>
         <i slot="loading">加载中...</i>
       </huge-tree>
@@ -117,7 +117,7 @@ export default {
   computed: {},
 
   mounted() {
-    this.btnClick('tree-502');
+    // this.btnClick('tree-10');
     this.onLazy('tree-load-1')
   },
 
