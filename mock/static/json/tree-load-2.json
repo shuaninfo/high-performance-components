@@ -1,0 +1,22 @@
+[
+  {
+    "id": "table_colum",
+    "label": "列",
+    "leaf": false
+  },
+  {
+    "id": "table_indexs",
+    "label": "索引",
+    "leaf": false
+  },
+  {
+    "id": "table_fk",
+    "label": "外键",
+    "leaf": false
+  },
+  {
+    "id": "table_t",
+    "label": "触发器",
+    "leaf": false
+  }
+]

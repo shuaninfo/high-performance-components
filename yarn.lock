@@ -2250,6 +2250,13 @@
     lodash "^4.17.4"
     read-pkg-up "^7.0.0"
 
+"@shuaninfo/random@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@shuaninfo/random/-/random-5.1.1.tgz#f51a34888bd399254df9f1bcd4dfd0e1adac3b09"
+  integrity sha512-9WmrUbPzd5/2N0R5iWlKt0dbW39AFp3PWWj2m1LaWGjHv+ZSbWxrOT8VTaaGgZTRInu4UAPzhguiyFTFSybHWQ==
+  dependencies:
+    type-fest "^1.0.1"
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.3.tgz#3802ddd21a50a949b6721ddd72da36e67e7f1b2d"
@@ -13711,6 +13718,11 @@ type-fest@^0.8.1:
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
+
+type-fest@^1.0.1:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-1.4.0.tgz#e9fb813fe3bf1744ec359d55d1affefa76f14be1"
+  integrity sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA==
 
 type-is@^1.6.14, type-is@^1.6.16, type-is@~1.6.17, type-is@~1.6.18:
   version "1.6.18"

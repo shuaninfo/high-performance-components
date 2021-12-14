@@ -1,0 +1,25 @@
+[
+  {
+    "id": "table_user",
+    "label": "user",
+    "type": "表",
+    "leaf": false
+  },
+  {
+    "id": "table_role",
+    "label": "role",
+    "type": "表",
+    "leaf": false
+  },
+  {
+    "id": "table_auth",
+    "label": "auth_true",
+    "type": "表",
+    "leaf": true
+  },
+  {
+    "id": "table_auth2",
+    "label": "auth2_un",
+    "type": "表"
+  }
+]

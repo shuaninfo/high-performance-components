@@ -1,0 +1,23 @@
+[
+  {
+    "id": "table_colum_runoob_id",
+    "label": "runoob_id",
+    "pk": true,
+    "leaf": true
+  },
+  {
+    "id": "table_colum_runoob_title",
+    "label": "runoob_title",
+    "leaf": true
+  },
+  {
+    "id": "table_colum_runoob_author",
+    "label": "runoob_author",
+    "leaf": true
+  },
+  {
+    "id": "table_colum_date",
+    "label": "runoob_date",
+    "leaf": true
+  }
+]

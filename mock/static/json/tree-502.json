@@ -9,7 +9,7 @@
         "name": "小明",
         "age": 20,
         "db_type": "mysql",
-        "isLeaf": true
+        "leaf": true
       },
       {
         "id": "2-2",

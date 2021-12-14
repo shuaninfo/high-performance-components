@@ -1,6 +1,7 @@
 <template>
-  <div class="huge-tree">
-    <section v-if="hasInput" class="search-bar">
+  <!-- shuan high performance-component -->
+  <div class="sahpc-tree">
+    <!-- <section v-if="hasInput" class="search-bar">
       <slot name="pre-input"></slot>
       <div class="input">
         <input
@@ -14,7 +15,7 @@
         <i v-if="keyword" class="clear-input" @click="init(keyword)"></i>
       </div>
       <button class="search-btn" @click="init">搜索</button>
-    </section>
+    </section> -->
     <section ref="content-wrap" class="content-wrap" @scroll="onScroll">
       <div class="tree-phantom" :style="`height: ${phantomHeight}px`"></div>
       <div
@@ -28,15 +29,18 @@
             :class="['item', { 'is-hidden': item.isHidden }]"
             :style="`margin-left: ${(item.path.length - 1) * Number(indent)}px`"
           >
+
             <div
               v-if="item.isLeaf !== true"
-              class="node-expand"
+              class="node-expand-btn"
               :class="[
                 item.isLeaf===true ? 'leaf-node' : 'expand-node',
                 { 'is-expand': item.isExpand ===true }
               ]"
               @click="onExpand(item, index)"
             ></div>
+            <div v-else class="node-expand-btn"></div>
+
             <dt-checkbox
               v-model="item.checked"
               :indeterminate="item.indeterminate"
@@ -107,7 +111,7 @@ export default {
         return {
           children: 'children',
           label: 'label',
-          isLeaf: 'leaf' // TODO: 暂时废弃
+          isLeaf: 'leaf'
         }
       }
     },
@@ -192,22 +196,14 @@ export default {
       this.big._data = data
       this.init('init')
     },
-    // 当lazy为true时, 懒加载
-    loadNode(node, data){
-      if(this.lazy && this.load){
-        // 
-        const loadFn = this.load
-        loadFn(node, (data) => {
-          // 加入this.big._data中
-        })
-      }
-    },
-    init(op) {
+    init(op, { lazy = false, node = null }={}) {
       // op: init, restore, showCheckedOnly
       if (this.big._data.length === 0) return
       if (op === 'init') {
         // 拉平tree, 填充到this.big.list
-        this.flatTree(this.big._data)
+
+        // data => node<{id, label, data..}>
+        this.data2node(this.big._data)
 
         const _list = this.big.list
         const _listMap = this.big.listMap
@@ -215,17 +211,28 @@ export default {
           const node = _list[i]
           _listMap[node.id] = node
         }
+      }else if(op === 'lazy'){
+        // 懒加载
+        this.data2node(this.big._loadData, {lazy})
+        const _list = this.big.lazylist
+        const _listMap = this.big.listMap
+        for(let i=0,len=_list.length;i<len;i++){
+          const node = _list[i]
+          _listMap[node.id] = node
+        }
       }
-      this.initFilter(op)
+      this.initFilter(op, {lazy, node})
       if (op === 'init' || op === 'restore') this.initExpand()
       this.setCheckedKeys(this.big.checkedKeys)
       this.backToTop()
+      console.log('初始化结束: ', this.big)
     },
     // 拉平 tree
-    flatTree(datas) {
+    data2node(datas, {lazy=false}={}) {
       // level从1开始
-      depthFirstEach({ tree: datas, nodeKey: this.nodeKey,  lazy:true, init: true, props: this.props,  level: 1 }, node => {
-        this.big.list.push(node)
+      const _list = lazy ? this.big.lazylist : this.big.list
+      depthFirstEach({ tree: datas, nodeKey: this.nodeKey, lazy:true, init: true, props: this.props,  level: 1 }, node => {
+        _list.push(node)
       })
     },
 
@@ -237,12 +244,14 @@ export default {
         this.setExpand(this.expandKeys)
         return
       }
-
       // expandLevel 处理
       if (/^\d+$/.test(this.expandLevel)) {
         this.big.filterList.forEach(node => {
           node.isExpand = Boolean(node.path.length < this.expandLevel)
           node.isHidden = Boolean(node.path.length > this.expandLevel)
+          // if(node.id.indexOf('table_')===0){
+          //   debugger
+          // }
           this.initNode(node)
         })
       } else {
@@ -266,8 +275,9 @@ export default {
       const _filterList = this.big.filterList
       for(let i=0,len=_filterList.length; i < len; i++){
         const node = _filterList[i]
-        // TODO: 考虑懒加载
-        if (node.isLeaf === true || node.isLeaf === undefined) {
+        // TODO: 考虑懒加载时, 
+        // if (node.isLeaf === true || node.isLeaf === undefined) {
+        if (node.isLeaf === true) {
           // 是叶子
           node.isExpand = false
           node.isHidden = Boolean(!expandIds.includes(node.parentId))
@@ -329,9 +339,40 @@ export default {
     getCheckedNodes() {
       return this.big.checkedNodes
     },
+    /**
+     * 当lazy为true时, 懒加载
+     * @param {Node} node 当前展开的node
+     * @param {Array<NodeData>} datas 待加载的数据列表
+     */
+    loadNode(node){
+      if(this.lazy && this.load){
+        const loadFn = this.load
+        loadFn(node, (datas) => {
+          // TODO: 懒加载, 加入this.big._data中
+          // 设置node为展开状态
+          node.isExpand = !node.isExpand
+          this.big._loadData = datas
+          this.init('lazy', {lazy:true, node})
+          this.updateView()
+          console.log('懒加载: ', this.big)
+        })
+      }else{
+        console.error('懒加载配置错误!')
+      }
+    },
     // 点击展开与收缩
     onExpand(node) {
-      if (node.isLeaf === true || node.isLeaf ===  undefined) return
+      /*
+        1. 如果是叶子, 则不处理
+        2. 如果不是叶子 & 开启了懒加载
+        3. 如果不是叶子 & 关闭了懒加载
+      */
+     if (node.isLeaf === true || node.isLeaf ===  undefined) return
+      if(node.isLeaf === false && this.lazy === true){
+        this.loadNode(node)
+        // 调用
+        return
+      }
       node.isExpand = !node.isExpand
       this.showOrHiddenChildren(node, !node.isExpand)
     },
@@ -373,7 +414,6 @@ export default {
 
     // 1. 隐藏： 子孙后代都要隐藏， 2. 展开：仅儿子展开, value
     showOrHiddenChildren(node, isHidden) {
-      // TODO: ??
       if (isHidden) {
         depthFirstEach({ tree: node.children }, snode => {
           snode.isHidden = isHidden
@@ -396,8 +436,8 @@ export default {
       if (!node.children) return
       const checked = node.checked
       depthFirstEach({ tree: node.children }, snode => {
-        // TODO: ??2
-        if ((snode.isLeaf === true || snode.isLeaf === undefined) && snode.disabled) return
+        // if ((snode.isLeaf === true || snode.isLeaf === undefined) && snode.disabled) return
+        if ((snode.isLeaf === true) && snode.disabled) return
         snode.indeterminate = false
         snode.checked = checked
       })
@@ -447,20 +487,20 @@ export default {
     },
 
     // 筛选节点
-    initFilter(op) {
+    initFilter(op, {lazy = false, node = null}={}) {
       // set this.big.filterList
       this.setFilterList(op)
       this.updateView()
       // 过滤后的tree  同时也将children挂载到了this.filterList的节点
       this.big.filterTree = listToTree(this.big.filterList)
-      // TODO: 性能优化
-      breadthFirstEach({ tree: this.big.filterTree }, node => {
-        /* false: 不是叶子; true: 叶子; undefined: 未知 */
-        if (node.isLeaf === false) {
-          // 子/孙节点数量
-          node.subNodeCount = getSubNodeCount(this.big.filterTree, node)
-        }
-      })
+      // TODO: 根据配置确定是否查询
+      // breadthFirstEach({ tree: this.big.filterTree }, node => {
+      //   /* false: 不是叶子; true: 叶子; undefined: 未知 */
+      //   if (node.isLeaf === false) {
+      //     // 子/孙节点数量
+      //     node.subNodeCount = getSubNodeCount(this.big.filterTree, node)
+      //   }
+      // })
       this.big.disabledList = this.big.filterList.filter(i => i.disabled)
     },
 
@@ -513,7 +553,9 @@ export default {
       })
     },
 
-    // 根据 updateViewCount 触发 computed
+    /**
+     * 根据 updateViewCount 手动触发 computed
+     */
     updateView() {
       this.updateViewCount++
     },
@@ -564,7 +606,6 @@ export default {
   },
   created() {
     this.big = new BigData()
-    // TODO: 改为深拷贝方法
     this.big.checkedKeys = JSON.parse(JSON.stringify(this.defaultCheckedKeys))
     this.throttleSrcoll = throttle(this.setRenderRange, 80)
     this.debounceInput = debounce(this.init, 300)
@@ -575,7 +616,7 @@ export default {
 }
 </script>
 <style lang="scss">
-.huge-tree {
+.sahpc-tree {
   border: 1px solid #000;
   padding: 10px 0;
   min-height: 50px;
@@ -663,13 +704,15 @@ export default {
           display: none;
           // visibility: hidden;
         }
-        .expand-node {
+        .node-expand-btn{
           position: relative;
           right: 4px;
           width: 10px;
           height: 10px;
-          border: 1px solid #4a4a4a;
           line-height: 10px;
+        }
+        .expand-node {
+          // border: 1px solid #4a4a4a;
           transition: transform 0.3s ease-in-out;
           cursor: pointer;
           &.is-expand {

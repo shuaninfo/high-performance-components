@@ -2,7 +2,9 @@
 export class BigData {
   constructor() {
     this._data = [] // 海量数据 tree
+    this._lazydata = [] // 当次懒加载的, 海量数据 tree
     this.list = [] // 扁平化的tree
+    this.lazylist = [] // 当次懒加载的, 扁平化的tree
     this.filterList = [] // 根据关键词过滤后的list
     this.listMap = {} // this.big.list 对应的 map
     this.filterTree = [] // 根据关键词过滤后的tree
@@ -116,20 +118,17 @@ export function depthFirstEach({ nodeKey = 'id', tree, path = [], lazy = false, 
         label: _node[props.label],
         data: _node,
         level: level,
-        path: [...path, node.id]
+        path: [...path, node.id],
+        isLeaf: lazy ? !!_node[props.isLeaf] : !hasChildren
       }
-      // node.data = JSON.parse(JSON.stringify(node))
-      // node.level = level
-      // node.label = node.data[props.label]
-      // node.id = node.data[nodeKey]
-      // node.path = [...path, node.id]
-      // node.parentId = node.parentId || parentId
-
       /*
-        如果开启了懒加载, 并且没有children, 则设置isLeaf为未知
-        没有子节点为true
+        如果开启了懒加载
       */
-      node.isLeaf = (lazy && !hasChildren) ? undefined : !hasChildren // node.isLeaf == undefined ? !hasChildren : node.isLeaf
+      // if (lazy) {
+      //   node.isLeaf = !!_node[props.isLeaf]
+      // } else {
+      //   node.isLeaf = !hasChildren //(lazy && !hasChildren) ? undefined : !hasChildren // node.isLeaf == undefined ? !hasChildren : node.isLeaf
+      // }
     }
     if (cb) {
       const res = cb(node)
@@ -177,6 +176,7 @@ export function listToTree(filterList) {
     console.warn('The parameter filterList to function listToTree must be an array')
     return
   }
+  // debugger
   if (!filterList || filterList.length === 0) return []
   const root = {
     // 0: {

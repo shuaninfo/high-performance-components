@@ -16,20 +16,15 @@
       <button @click="invokeRef('showCheckedOnly')">
         showCheckedOnly
       </button>
-      <button @click="invokeRef('restore')">
-        restore
-      </button>
-      <button @click="invokeRef('clear')">clear</button>
     </div>
 
     <div class="tree-wrap" v-show="isShowDialog">
       <huge-tree
         ref="huge-tree"
-        hasInput
         checkedAction="dblclick"
         node-key="id"
         :expandKeys="expandKeys"
-        :expandLevel="0"
+        :expandLevel="1"
         :isLoading="isLoading"
         :showCheckbox="true"
         :defaultCheckedKeys="checkedKeys"
@@ -43,16 +38,48 @@
         </select>
         <span slot-scope="{ slotScope }"><i>&#9733;</i> 
           {{ slotScope.label }}
-          {{ slotScope.isExpand }}
+          {{ slotScope.isLeaf }}
         </span>
         <i slot="loading">加载中...</i>
       </huge-tree>
     </div>
-    <read-me class="mark-down"></read-me>
+
+    <!-- 懒加载 -->
+    <div style="margin-top:100px;height: 600px; width: 400px;">
+      <button @click="onLazy('tree-load-1')">懒加载</button><br />
+      <huge-tree
+        ref="lazy-tree"
+        checkedAction="dblclick"
+        node-key="id"
+        lazy
+        :load="loadSubNode"
+        :expandKeys="expandKeys"
+        :expandLevel="1"
+        :isLoading="isLoading"
+        :showCheckbox="true"
+        :defaultCheckedKeys="checkedKeys"
+        @onChange="onChange"
+        @onClickLabel="onClickLabel"
+        @onClickCheckbox="onClickCheckbox"
+      >
+        <select slot="pre-input" class="pre-select">
+          <option value="1">slot</option>
+          <option value="2">hhh</option>
+        </select>
+        <span slot-scope="{ slotScope }"><i>&#9733;</i> 
+          {{ slotScope.label }}
+          {{ slotScope.isLeaf }}
+        </span>
+        <i slot="loading">加载中...</i>
+      </huge-tree>
+    </div>
+
+    <read-me style="margin-top: 100px;" class="mark-down"></read-me>
   </div>
 </template>
 
 <script>
+import random from '@shuaninfo/random';
 import axios from 'axios';
 import Tree from '@shuaninfo/tree'
 import ReadMe from '../readme.md';
@@ -91,17 +118,38 @@ export default {
 
   mounted() {
     this.btnClick('tree-502');
+    this.onLazy('tree-load-1')
   },
 
   beforeDestroy() {},
 
   methods: {
     nav() {
-      this.$router.replace('/demo/hugeTree1');
+      // this.$router.replace('/demo/hugeTree1');
     },
-    btnClick(count) {
+    // 懒加载
+    onLazy(jsonFileName){
+      // this.invokeRef('clear')
       this.isShowDialog = true;
-      axios.get(`/static/json/${count}.json`).then(({ data }) => {
+      axios.get(`/static/json/${jsonFileName}.json`).then(({data})=>{
+        this.expandKeys = [];
+        this.$nextTick(()=>{
+          this.$refs['lazy-tree'].setData(data)
+          this.isLoading = false;
+        })
+      })
+    },
+    loadSubNode(node, resolve){
+      axios.get(`/static/json/tree-load-${node.level+1}.json`).then(({ data }) => {
+        data.forEach(item => {
+          item.id = `${item.id}_${random({length: 10})}`
+        })
+        resolve(data)
+      })
+    },
+    btnClick(jsonFileName) {
+      this.isShowDialog = true;
+      axios.get(`/static/json/${jsonFileName}.json`).then(({ data }) => {
         this.expandKeys = ['1-1', '2-1'];
         this.$refs['huge-tree'].setData(data);
         this.isLoading = false;
