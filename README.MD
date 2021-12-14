@@ -1,4 +1,26 @@
+# @shuaninfo/high-performance-components
+
+> Fork: https://github.com/bitmain-frontend/huge-tree
+
+```shell
+# 安装
+> npm install -S @shuaninfo/tree
+# 或
+> yarn add @shuaninfo/tree
+```
+
+
+
+### 在线演示
+
+
+
+
+
+
+
 ## 在线演示
+
 [http://39.98.139.162:3000/demo](http://39.98.139.162:3000/demo)
 
 ## 使用方式

@@ -1,0 +1,17 @@
+{
+  "name": "@shuaninfo/tree",
+  "version": "3.0.0",
+  "main": "./dist/index.umd.min.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vue-cli-service build --watch --modern  --mode development --target lib --mode development --name index --entry src/index.js",
+    "build": "vue-cli-service build --target lib --name index.js"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": ">=2.6.0"
+  },
+  "devDependencies": {
+    "vue-template-compiler": "^2.6.11"
+  }
+}

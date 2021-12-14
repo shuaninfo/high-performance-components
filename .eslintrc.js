@@ -1,15 +1,25 @@
 module.exports = {
-  parser: 'vue-eslint-parser',
-  parserOptions: {
-    parser: 'babel-eslint',
-    ecmaVersion: 2017,
-    sourceType: 'module',
+  root: true,
+  env: {
+    browser: true,
+    node: true
   },
-  extends: ['prettier', 'plugin:vue/essential'],
-  plugins: ['prettier'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:vue/recommended',
+    '@vue/typescript',
+    '@vue/prettier',
+    'prettier/@typescript-eslint'
+  ],
   rules: {
-    'prettier/prettier': ['warn'],
-    'no-param-reassign': ['off'],
-    'space-before-function-paren': ['warn', 'never'],
+    'prettier/prettier': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
   },
-};
+  parserOptions: {
+    parser: '@typescript-eslint/parser'
+  }
+}
