@@ -225,7 +225,6 @@ export default {
       if (op === 'init' || op === 'restore') this.initExpand()
       this.setCheckedKeys(this.big.checkedKeys)
       this.backToTop()
-      console.log('初始化结束: ', this.big)
     },
     // 拉平 tree
     data2node(datas, {load=false, node=null, index=null}={}) {
@@ -258,7 +257,7 @@ export default {
         _list.push(node)
       })
       if(load && index != null){
-        console.log('-----------', _list.length)
+        // TODO: 优化
         this.big.list.splice(index+1,0, ..._list)
         this.big.lazylist = []
       }
@@ -381,7 +380,6 @@ export default {
           // 完成懒加载
           node.loaded = true
           this.updateView()
-          console.log('懒加载: ', node)
         })
       }else{
         console.error('懒加载配置错误!')
@@ -520,7 +518,6 @@ export default {
       this.updateView()
       // 过滤后的tree  同时也将children挂载到了this.filterList的节点
       this.big.filterTree = listToTree(this.big.filterList, {load, node})
-      console.log('this.big.filterTree: ', this.big.filterTree)
       // TODO: 根据配置确定是否查询
       // breadthFirstEach({ tree: this.big.filterTree }, node => {
       //   /* false: 不是叶子; true: 叶子; undefined: 未知 */
