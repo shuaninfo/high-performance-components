@@ -7,49 +7,23 @@
 
 
 ```html
-<tree
-ref="treeRef"
-      :class="{'card-db-item-tempalte-disabled':  isDisabled,'card-db-item-tempalte-selected': isCurrentTree || isRootTree}"
-      :expand-on-click-node="false"
+<tree :expand-on-click-node="false"
+      :default-expand-all="false"
       :props="defaultProps"
       :load="loadSubNode"
-      :default-expand-all="false"
       node-key="_uniKey"
       lazy
-      @node-collapse="closeNodeHandle"
-      @node-click="onItemClick"
-      @node-contextmenu="onMenuClick"
-
-slot-scope="{ data, node }"
+      @node-contextmenu="onMenuClick">
+</tree>
 
 
-<!--  -->
-<btm-huge-tree
-        ref="huge-tree"
-        hasInput
-        checkedAction="dblclick"
-        :expandKeys="expandKeys"
-        expandLevel="all"
-        :isLoading="isLoading"
-        :showCheckbox="true"
-        :defaultCheckedKeys="checkedKeys"
-        @onChange="onChange"
-        @onClickLabel="onClickLabel"
-        @onClickCheckbox="onClickCheckbox"
-
-
-               
-               
-@node-click="onItemClick"
-@node-contextmenu="onMenuClick"
-lazy
-node-key="_uniKey"
-:expand-on-click-node="false"
-:props="defaultProps"
-:load="loadSubNode"
-:default-expand-all="false"
+@node-collapse="closeNodeHandle"
                
 ```
+
+
+
+> 注意： node-key必须全局唯一，否则会出错
 
 
 
@@ -85,11 +59,13 @@ node-key="_uniKey"
 
 | 方法名             | 说明                                                         | 参数                                                         |
 | ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| setCurrentKey      | 通过 key 设置某个节点的当前选中状态，使用此方法必须设置 node-key 属性 | (key) 待被选节点的 key，若为 null 则取消当前高亮的节点       |
-| setCurrentNode     | 通过 node 设置某个节点的当前选中状态，使用此方法必须设置 node-key 属性 | (node) 待被选节点的 node                                     |
-| getCurrentNode     | 获取当前被选中节点的 data，若没有节点被选中则返回 null       | -                                                            |
-| getCurrentKey      | 获取当前被选中节点的 key，使用此方法必须设置 node-key 属性，若没有节点被选中则返回 null | -                                                            |
-| getNode            | 根据 data 或者 key 拿到 Tree 组件中的 node                   | (data) 要获得 node 的 key 或者 data                          |
+| setCurrentKey      | 未实现，通过 key 设置某个节点的当前选中状态，使用此方法必须设置 node-key 属性 | (key) 待被选节点的 key，若为 null 则取消当前高亮的节点       |
+| setCurrentNode     | 未实现，通过 node 设置某个节点的当前选中状态，使用此方法必须设置 node-key 属性 | (node) 待被选节点的 node                                     |
+| getCurrentNode     | 未实现，获取当前被选中节点的 data，若没有节点被选中则返回 null | -                                                            |
+| getCurrentKey      | 未实现，获取当前被选中节点的 key，使用此方法必须设置 node-key 属性，若没有节点被选中则返回 null | -                                                            |
+| getNode            | 根据 node.id 拿到 Tree 组件中的 node                         |                                                              |
+| setSelectNode      | 根据node.id设置node状态                                      | node.id                                                      |
+| getSelectNode      | 获取当前选中的node                                           |                                                              |
 | filter             | 对树节点进行筛选操作                                         | 接收一个任意类型的参数，该参数会在 filter-node-method 中作为第一个参数 |
 | filter-node-method |                                                              |                                                              |
 
@@ -99,8 +75,8 @@ node-key="_uniKey"
 
 | 事件名           | 说明                                   | 回调参数                                                     |
 | ---------------- | -------------------------------------- | ------------------------------------------------------------ |
-| node-click       | 节点被点击时的回调                     | 共三个参数，依次为：传递给 `data` 属性的数组中该节点所对应的对象、节点对应的 Node、节点组件本身。 |
-| node-contextmenu | 当某一节点被鼠标右键点击时会触发该事件 | 共四个参数，依次为：event、传递给 `data` 属性的数组中该节点所对应的对象、节点对应的 Node、节点组件本身。 |
+| node-click       | 节点被点击时的回调                     | 共三个参数，依次为：传递给 `data` 属性的数组中该节点所对应的对象、节点对应的 Node、event事件。 |
+| node-contextmenu | 当某一节点被鼠标右键点击时会触发该事件 | 共三个参数，依次为：event、传递给 `data` 属性的数组中该节点所对应的对象、节点对应的 Node。 |
 |                  |                                        |                                                              |
 
 

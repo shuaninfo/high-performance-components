@@ -1,10 +1,29 @@
 
+// type Node = {
+//   id: String | Number // 全局唯一ID
+//   label: String | Number // 显示名
+//   selected: Boolean // 是否被选中
+//   checked: Boolean // 是否被勾选
+//   indeterminate: Boolean // 
+//   disabled: Boolean // 是否禁用
+//   isExpand: Boolean // 是否展开
+//   isHidden: Boolean // 是否隐藏
+//   isLeaf: Boolean // 是否为叶子节点
+//   level: Number // 级别, root:1
+//   parentId: String | Number // 父级ID
+
+//   data: Any //
+
+//   children: Array
+//   childrenMap: Map
+// }
+
 export class BigData {
   constructor() {
     this._data = [] // 海量数据 tree
     this._lazydata = [] // 当次懒加载的, 海量数据 tree
-    this.list = [] // 扁平化的tree
-    this.lazylist = [] // 当次懒加载的, 扁平化的tree
+    this.list = [] // node list
+    this.lazylist = [] // 当次懒加载的, node list
     this.filterList = [] // 根据关键词过滤后的list
     this.listMap = {} // this.big.list 对应的 map
     this.filterTree = [] // 根据关键词过滤后的tree
@@ -108,7 +127,7 @@ export function depthFirstEach({ nodeKey = 'id', tree, path = [], lazy = false, 
     const hasChildren = node.children && node.children.length > 0
     // 初始化
     if (init) {
-      /* 
+      /*
         1. _node表示data
         2. 生成node结构
       */
@@ -119,7 +138,7 @@ export function depthFirstEach({ nodeKey = 'id', tree, path = [], lazy = false, 
         data: _node,
         level: level,
         // 父级的id, 自己的id
-        path: [...path, _node.id],
+        path: [...path, _node[nodeKey]],
         isLeaf: lazy ? !!_node[props.isLeaf] : !hasChildren
       }
       /*
@@ -158,9 +177,9 @@ export function getLeafCount(tree, node) {
 }
 /**
  * @see getLeafCount()
- * @param {*} tree 
- * @param {*} node 
- * @returns 
+ * @param {*} tree
+ * @param {*} node
+ * @returns
  */
 export function getSubNodeCount(tree, node) {
   const subTree = findSubTree(tree, node.id)
@@ -170,7 +189,6 @@ export function getSubNodeCount(tree, node) {
   })
   return count
 }
-
 
 export function listToTree(filterList, { lazy = false, node = null } = {}) {
   if (!Array.isArray(filterList)) {
@@ -210,6 +228,7 @@ export function listToTree(filterList, { lazy = false, node = null } = {}) {
       }
     }
   }
+  // debugger
   filterList.forEach(node => {
     node.childrenMap = {}
     // TODO: 性能消耗
@@ -240,7 +259,6 @@ export function breadthFirstEach({ tree, limitDeep = Number.MAX_SAFE_INTEGER, de
     .flat(1)
   breadthFirstEach({ tree: childrenList, limitDeep, deep: deep++ }, cb)
 }
-
 
 /**
  * 广度优先遍历算法，节点自己

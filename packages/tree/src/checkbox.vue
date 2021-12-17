@@ -1,6 +1,7 @@
 <template>
   <div :class="['check-box']">
-    <div class="tree-label" @click="onSingleChecked" @dblclick="onDBLChecked">
+    <!-- @dblclick="onDBLChecked" -->
+    <div class="tree-label" @click="onSingleChecked" >
       <slot></slot>
     </div>
     <div

@@ -1,19 +1,19 @@
 <template>
   <!-- shuan high performance-component -->
   <div class="sahpc-tree">
-    <section ref="contentWrapRef" class="sahpc-content-wrap" @scroll="onScroll">
-      <div class="sahpc-tree-phantom" :style="`height: ${phantomHeight}px`"></div>
+    <section ref="content-wrap" class="content-wrap" @scroll="onScroll">
+      <div class="tree-phantom" :style="`height: ${phantomHeight}px`"></div>
       <div
-        class="sahpc-tree-content"
+        class="tree-content"
         :style="`transform: translateY(${startIndex * itemHeigth}px)`"
       >
         <template v-for="(node, index) in renderList">
           <section
             v-if="node.path"
-            :class="['sahpc-node-section', { 'is-hidden': node.isHidden }, { 'is-selected': node.selected }]"
+            :class="['node-section', { 'is-hidden': node.isHidden }, { 'is-selected': node.selected }]"
             @click.stop="nodeHandleClick($event, node)"
             @contextmenu="nodeHandleContextMenu($event, node)"
-            :key="'k'+index"
+            :key="'k' + index"
           >
             <div
               class="node"
@@ -165,7 +165,7 @@ export default {
       updateViewCount: 1, // 用于视图更新
       keyword: '', // 关键词
       isSearching: false, // 搜索中
-      itemHeigth: 25, // 每一项的高度
+      itemHeigth: 27, // 每一项的高度
       startIndex: 0, // 渲染的开始区间
       endIndex: 70, // 渲染的结束区间
       throttleSrcoll: '', // 节流
@@ -532,10 +532,7 @@ export default {
     },
 
     // 设置可见区域的区间
-    setRenderRange (scrollTop = this.$refs.contentWrapRef && this.$refs.contentWrapRef.scrollTop) {
-      if (!scrollTop) {
-        return
-      }
+    setRenderRange (scrollTop = this.$refs['content-wrap'].scrollTop) {
       const count = Math.ceil(this.$el.clientHeight / this.itemHeigth) + 40 // 可见项数
       const startIndex = Math.floor(scrollTop / this.itemHeigth)
       this.startIndex = startIndex > 20 ? startIndex - 20 : 0
@@ -597,7 +594,7 @@ export default {
     // 回到顶部
     backToTop () {
       this.$nextTick(() => {
-        this.$refs.contentWrapRef.scrollTop = 0
+        this.$refs['content-wrap'].scrollTop = 0
         this.setRenderRange()
       })
     },
@@ -673,8 +670,9 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
 .sahpc-tree {
+  border: 1px solid #000;
   padding: 10px 0;
   min-height: 50px;
   height: 100%;
@@ -697,26 +695,60 @@ export default {
           border-color: #409eff;
         }
       }
+      .clear-input {
+        position: absolute;
+        border-radius: 50%;
+        font-style: normal;
+        width: 12px;
+        top: 10px;
+        height: 12px;
+        right: 6px;
+        border: 1px solid #cccccc;
+        color: #ccc;
+        display: inline-block;
+        cursor: pointer;
+        &::after {
+          content: '\00D7';
+          position: absolute;
+          top: -6px;
+          left: 1px;
+          transform: scale(0.7);
+        }
+        &:hover {
+          border-color: #409eff;
+          color: #409eff;
+        }
+      }
+    }
+    .search-btn {
+      width: 50px;
+      background-color: #409eff;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      &:hover {
+        background-color: #228af1;
+      }
     }
   }
-  .sahpc-content-wrap {
+  .content-wrap {
     position: relative;
     overflow: auto;
     padding: 0 10px;
     flex: 1;
-    .sahpc-tree-phantom {
+    .tree-phantom {
       position: absolute;
       left: 0;
       top: 0;
       right: 0;
       z-index: -1;
     }
-    .sahpc-tree-content {
+    .tree-content {
       position: absolute;
       left: 0;
       right: 0;
       top: 0;
-      .sahpc-node-section{
+      .node-section{
         &.is-selected{
           background-color: #ecedee;
         }
@@ -730,15 +762,15 @@ export default {
         .node {
           display: flex;
           align-items: center;
-          padding: 2px 0px;
+          padding: 2px 18px 2px 15px;
           .node-expand-btn{
-            // margin-right: 6px;
-            min-width: 20px;
+            margin-right: 6px;
+            width: 10px;
             height: 10px;
             line-height: 10px;
-            text-align: center;
           }
           .expand-node {
+            // border: 1px solid #4a4a4a;
             transition: transform 0.3s ease-in-out;
             cursor: pointer;
             &.is-expand {
@@ -751,7 +783,6 @@ export default {
             }
             &::before {
               content: '+';
-              text-align: center;
               top: -1px;
               left: 0;
               transform: scale(0.8);
@@ -759,13 +790,15 @@ export default {
             // 展开
             &.is-expand::before {
               content: '-';
-              text-align: center;
-              top: -1px;
+              top: -2px;
               left: 0px;
             }
           }
           .label {
             cursor: pointer;
+            &:hover {
+              color: #409eff;
+            }
             .count {
               font-size: 12px;
             }

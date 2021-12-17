@@ -27,18 +27,20 @@
         :expandKeys="expandKeys"
         :expandLevel="1"
         :isLoading="isLoading"
-        :showCheckbox="true"
         :defaultCheckedKeys="checkedKeys"
         @onChange="onChange"
         @onClickLabel="onClickLabel"
+        @node-click="onNodeClick"
+        @node-contextmenu="onNodeMenuClick"
         @onClickCheckbox="onClickCheckbox"
       >
         <select slot="pre-input" class="pre-select">
           <option value="1">slot</option>
           <option value="2">hhh</option>
         </select>
-        <span slot-scope="{ slotScope }"><i>&#9733;</i> 
-          {{ slotScope.label }}
+        <span slot-scope="{ data, node }"><i>&#9733;</i> 
+          {{ node.label }}
+          {{ data.leaf }}
         </span>
         <i slot="loading">加载中...</i>
       </huge-tree>
@@ -56,76 +58,84 @@
         :expandKeys="expandKeys"
         :expandLevel="1"
         :isLoading="isLoading"
-        :showCheckbox="true"
         :defaultCheckedKeys="checkedKeys"
         @onChange="onChange"
-        @onClickLabel="onClickLabel"
+        @node-check="onClickLabel"
         @onClickCheckbox="onClickCheckbox"
       >
         <select slot="pre-input" class="pre-select">
           <option value="1">slot</option>
           <option value="2">hhh</option>
         </select>
-        <span slot-scope="{ slotScope }"><i>&#9733;</i> 
-          {{ slotScope.label }}
-          {{ slotScope.isLeaf }}
+        <span slot-scope="{ data, node }"><i>&#9733;</i> 
+          {{ node.label }}
+          {{ data.leaf }}
         </span>
         <i slot="loading">加载中...</i>
       </huge-tree>
     </div>
 
     <read-me style="margin-top: 100px;" class="mark-down"></read-me>
+
+    <vue-context-menu class="right-menu"
+            ref="rightMenu"
+            :target="contextMenuTarget"
+            :show="contextMenuVisible"
+            @update:show="onRightHandle">
+              <a class="menu-item" href="javascript:void(0);" @click="menuClickHandle('ddl')">
+                查看创建语句
+              </a>
+              <a class="menu-item" href="javascript:void(0);" @click="menuClickHandle('copy_name')">
+                复制名称
+              </a>
+              <a class="menu-item" href="javascript:void(0);" @click="menuClickHandle('refresh')">
+                刷新
+              </a>
+        </vue-context-menu>
   </div>
 </template>
 
 <script>
-import random from '@shuaninfo/random';
+import random from '@shuaninfo/random'
 import axios from 'axios';
 import Tree from '@shuaninfo/tree'
-import ReadMe from '../readme.md';
+import ReadMe from '../readme.md'
+// 右键
+import { component as VueContextMenu } from '@shuaninfo/vue-context-menu'
 export default {
   components: {
     HugeTree:Tree,
     ReadMe,
+    VueContextMenu
   },
   props: {},
   data() {
     return {
+      currentMenuNode: null,
       checkedKeys: [],
       isLoading: true,
       isShowDialog: false,
       expandKeys: [],
-      // data: [
-      //    {
-      //       checked: false,
-      //       id: 1,
-      //       indeterminate: false, // 节点的子树中是否是部分选中， 代码生成
-      //       label: '节点text'
-      //       parentId: 0, // 父节点 id
-      //       isLeaf: false, // 叶子节点
-      //       path: [0, 1], // 节点位置
-      //       isExpand: false, // 展开， 代码生成
-      //       hidden: false, // 隐藏， 代码生成
-      //       disabled: false, // 禁用， 可选
-      //       leafCount: 100,  // 废弃. 子、孙叶子元素的数量，代码计算
-      //        subNodeCount: 100 // 子/孙节点数量
-      //     }
-      // ],
+      // 右键
+      contextMenuTarget: null, // 范围
+      contextMenuVisible: false // 菜单是否显示
     };
   },
-
-  computed: {},
-
   mounted() {
     // this.btnClick('tree-10');
     this.onLazy('tree-load-1')
   },
-
-  beforeDestroy() {},
-
   methods: {
     nav() {
       // this.$router.replace('/demo/hugeTree1');
+    },
+    menuClickHandle(key){
+      console.log(key, this.currentMenuNode && this.currentMenuNode.label)
+      this.contextMenuVisible = false
+    },
+    onRightHandle (e) {
+      this.contextMenuVisible = e
+      // (show) => contextMenuVisible = show
     },
     // 懒加载
     onLazy(jsonFileName){
@@ -165,6 +175,16 @@ export default {
     onClickLabel(node) {
       console.log('onClickLabel', node);
     },
+    onNodeClick(data, node, e){
+      console.log('onNodeClick: ', data, node, e)
+    },
+    onNodeMenuClick(e, _, node){
+      this.$refs['huge-tree'].setSelectNode(node.id)
+      // console.log('onNodeMenuClick: ', data, node, e)
+      // 打开右键
+      this.currentMenuNode = node
+      this.$refs.rightMenu.contextMenuHandler(e)
+    },
     onClickCheckbox(node) {
       console.log('onClickCheckbox', node);
     },
@@ -177,7 +197,38 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+  .right-menu {
+      min-width: 100px;
+      position: fixed;
+      z-index: 999;
 
+      display: none;
+
+      border: solid 1px rgba(0, 0, 0, .2);
+      border-radius: 3px;
+      background: #fff;
+  }
+  .right-menu{
+    padding: 5px;
+  }
+  .right-menu a {
+      line-height: 28px;
+
+      display: block;
+
+      // width: 75px;
+      height: 28px;
+      padding-left: 8px;
+      text-align: left;
+
+      color: #1a1a1a;
+  }
+
+  .right-menu a:hover {
+      opacity: .6;
+  }
+</style>
 <style scoped lang="scss" style="text/scss">
 .huge-demo {
   text-align: left;

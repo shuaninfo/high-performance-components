@@ -36,6 +36,7 @@
     "prettier": "^2.5.1",
     "sass-loader": "^8.0.2",
     "semantic-release": "18.0.1",
-    "vue-template-compiler": "^2.6.14"
+    "vue-template-compiler": "^2.6.14",
+    "@shuaninfo/vue-context-menu": "^2.0.1"
   }
 }
